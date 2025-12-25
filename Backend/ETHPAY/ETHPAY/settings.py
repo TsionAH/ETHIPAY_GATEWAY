@@ -24,6 +24,7 @@ SECRET_KEY = 'django-insecure-8nctsmn16_l5-&%i59tp*+p9=+m_jhbu@pdy$mgnj$qggpgwlc
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+CORS_ALLOW_ALL_ORIGINS = True
 
 ALLOWED_HOSTS = []
 
@@ -37,9 +38,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'corsheaders',
+    'api',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -73,9 +79,13 @@ WSGI_APPLICATION = 'ETHPAY.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+     'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'ethpay_db',
+        'USER': 'postgres',
+        'PASSWORD': 'ETHPAY@6',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
