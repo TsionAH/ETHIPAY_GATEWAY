@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { registerUser, updateUser } from '../services/userService';
+// This component is kept for backward compatibility but not actively used
+// Registration is handled in RegisterPage.jsx
 
 const UserForm = ({ user }) => {
   const [formData, setFormData] = useState({
