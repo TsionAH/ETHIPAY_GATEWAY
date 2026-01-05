@@ -1,15 +1,32 @@
+// In ETHPAY frontend: src/service/authService.js
 import api from "./api";
 
+// In ETHPAY frontend: src/service/authService.js
+
+
 export const register = async (userData) => {
-  const response = await api.post("auth/register/", {
+  console.log("Sending registration data to ETHPAY backend:", userData);
+  
+  // ETHPAY backend expects companyName field (can be empty string)
+  const registrationData = {
     fullName: userData.fullName,
-    companyName: userData.companyName || "",
-    phoneNumber: userData.phoneNumber,
     email: userData.email,
+    phoneNumber: userData.phoneNumber,
     password: userData.password,
     role: userData.role || "endUser",
-  });
-  return response.data;
+    companyName: userData.companyName || "", // ADD THIS - even if empty
+  };
+  
+  console.log("Formatted registration data:", registrationData);
+  
+  try {
+    const response = await api.post("auth/register/", registrationData);
+    console.log("Registration successful:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Registration API error:", error.response?.data || error.message);
+    throw error;
+  }
 };
 
 export const login = async (email, password, companyName = "") => {
@@ -18,7 +35,7 @@ export const login = async (email, password, companyName = "") => {
     const response = await api.post("auth/login/", {
       email,
       password,
-      companyName: companyName || "",
+      companyName: companyName || "", // Include empty string if not provided
     });
     
     console.log("Login response:", response.data);
@@ -45,6 +62,12 @@ export const login = async (email, password, companyName = "") => {
     throw error;
   }
 };
+
+// ... rest of the file stays the same
+
+
+
+// ... rest of the file remains the same
 
 export const logout = async () => {
   const refreshToken = localStorage.getItem("refreshToken");

@@ -253,3 +253,29 @@ class SystemLog(models.Model):
     
     def __str__(self):
         return f"Log {self.log_id} - {self.action} - {self.status}"
+# In api/models.py - Update the ServiceFeeCalculator model
+from decimal import Decimal
+
+# ... other models remain the same ...
+
+# ServiceFeeCalculator - CLASS 19
+class ServiceFeeCalculator(models.Model):
+    calculator_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    fee_percentage = models.DecimalField(max_digits=5, decimal_places=4, default=Decimal('0.0200'))  # Changed to 4 decimal places
+    minimum_fee = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.50'))
+    maximum_fee = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('100.00'))
+    
+    def __str__(self):
+        return f"Fee Calculator - {float(self.fee_percentage)*100}%"
+    
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(fee_percentage__gte=0) & models.Q(fee_percentage__lte=0.10),
+                name='fee_percentage_range'
+            ),
+            models.CheckConstraint(
+                check=models.Q(maximum_fee__gt=models.F('minimum_fee')),
+                name='max_fee_greater_than_min'
+            )
+        ]

@@ -281,6 +281,8 @@ class Validator:
         
         return len(errors) == 0, errors
 
+from decimal import Decimal
+# ... other imports remain the same
 
 # ServiceFeeCalculator Service - CLASS 19
 class ServiceFeeCalculatorService:
@@ -294,47 +296,73 @@ class ServiceFeeCalculatorService:
         calculator, created = ServiceFeeCalculator.objects.get_or_create(
             calculator_id='00000000-0000-0000-0000-000000000001',
             defaults={
-                'fee_percentage': 0.02,  # 2%
-                'minimum_fee': 0.50,
-                'maximum_fee': 100.00
+                'fee_percentage': Decimal('0.02'),  # 2% as Decimal
+                'minimum_fee': Decimal('0.50'),
+                'maximum_fee': Decimal('100.00')
             }
         )
         return calculator
     
     @classmethod
     def calculate_fee(cls, amount):
-        """Calculate service fee based on rules"""
+        """Calculate service fee based on rules - Returns Decimal"""
         calculator = cls.get_calculator()
         
-        fee = float(amount) * float(calculator.fee_percentage)
+        # Convert amount to Decimal if it's not already
+        if not isinstance(amount, Decimal):
+            try:
+                amount = Decimal(str(amount))
+            except:
+                amount = Decimal('0.00')
+        
+        # Calculate fee using Decimal arithmetic
+        fee = amount * Decimal(str(calculator.fee_percentage))
         
         # Apply minimum fee
-        if fee < float(calculator.minimum_fee):
-            fee = float(calculator.minimum_fee)
+        if fee < Decimal(str(calculator.minimum_fee)):
+            fee = Decimal(str(calculator.minimum_fee))
         
         # Apply maximum fee
-        if fee > float(calculator.maximum_fee):
-            fee = float(calculator.maximum_fee)
+        if fee > Decimal(str(calculator.maximum_fee)):
+            fee = Decimal(str(calculator.maximum_fee))
         
-        return round(fee, 2)
+        # Round to 2 decimal places for currency
+        fee = fee.quantize(Decimal('0.01'))
+        
+        return fee
+    
+    @classmethod
+    def calculate_fee_float(cls, amount):
+        """Alternative: Calculate fee and return as float (for compatibility)"""
+        fee = cls.calculate_fee(amount)
+        return float(fee)
     
     @classmethod
     def validate_fee_range(cls, fee):
         """Validate if fee is within allowed range"""
         calculator = cls.get_calculator()
-        return float(calculator.minimum_fee) <= float(fee) <= float(calculator.maximum_fee)
+        
+        # Ensure inputs are Decimal
+        if not isinstance(fee, Decimal):
+            fee = Decimal(str(fee))
+        
+        min_fee = Decimal(str(calculator.minimum_fee))
+        max_fee = Decimal(str(calculator.maximum_fee))
+        
+        return min_fee <= fee <= max_fee
     
     @classmethod
     def update_fee_rules(cls, fee_percentage, minimum_fee, maximum_fee):
-        """Update fee rules (admin only)"""
+        """Update fee rules (admin only) - Accepts strings or Decimals"""
         calculator = cls.get_calculator()
-        calculator.fee_percentage = fee_percentage
-        calculator.minimum_fee = minimum_fee
-        calculator.maximum_fee = maximum_fee
+        
+        # Convert to Decimal
+        calculator.fee_percentage = Decimal(str(fee_percentage))
+        calculator.minimum_fee = Decimal(str(minimum_fee))
+        calculator.maximum_fee = Decimal(str(maximum_fee))
+        
         calculator.save()
         return calculator
-
-
 # System Log Service
 class SystemLogService:
     """
