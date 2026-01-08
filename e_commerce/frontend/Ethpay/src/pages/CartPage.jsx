@@ -100,7 +100,7 @@ const CartPage = () => {
                                     </div>
                                     
                                     <div className="text-right min-w-24">
-                                        <p className="font-bold">${(parseFloat(item.price) * item.quantity).toFixed(2)}</p>
+                                        <p className="font-bold">{(parseFloat(item.price) * item.quantity).toFixed(2)} ETB</p>
                                     </div>
                                     
                                     <button 
@@ -141,14 +141,14 @@ const CartPage = () => {
                                     <span className="text-gray-600">
                                         {item.name} x {item.quantity}
                                     </span>
-                                    <span>${(parseFloat(item.price) * item.quantity).toFixed(2)}</span>
+                                    <span>{(parseFloat(item.price) * item.quantity).toFixed(2)} ETB</span>
                                 </div>
                             ))}
                             
                             <div className="border-t pt-3">
                                 <div className="flex justify-between font-bold text-lg">
                                     <span>Total</span>
-                                    <span>${calculateTotal()}</span>
+                                    <span>{calculateTotal()} ETB</span>
                                 </div>
                             </div>
                         </div>

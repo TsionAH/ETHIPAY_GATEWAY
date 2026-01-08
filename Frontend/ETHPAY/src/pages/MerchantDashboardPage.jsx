@@ -57,6 +57,21 @@ function MerchantDashboardPage() {
         return new Date(dateString).toLocaleString();
     };
 
+    // Build simple sparkline for recent credits
+    const sparklinePoints = (() => {
+        if (!dashboard?.recent_transactions) return [];
+        const amounts = dashboard.recent_transactions
+            .slice(0, 12)
+            .map((tx) => parseFloat(tx.amount))
+            .reverse();
+        const max = Math.max(...amounts, 1);
+        const stepX = amounts.length > 1 ? 120 / (amounts.length - 1) : 120;
+        return amounts.map((amt, idx) => ({
+            x: idx * stepX,
+            y: 40 - (amt / max) * 35
+        }));
+    })();
+
     if (loading) {
         return (
             <div className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -138,6 +153,27 @@ function MerchantDashboardPage() {
                                 <div>
                                     <p className="text-gray-600">Total Transactions</p>
                                     <p className="font-semibold">{dashboard.statistics?.transaction_count || 0}</p>
+                                </div>
+                            </div>
+                            <div className="mt-6">
+                                <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
+                                    Performance Snapshot
+                                    <span className="text-xs bg-indigo-50 text-indigo-700 px-2 py-1 rounded-full">live</span>
+                                </h3>
+                                <div className="bg-gray-50 border border-gray-200 rounded-md p-3">
+                                    {sparklinePoints.length > 0 ? (
+                                        <svg viewBox="0 0 120 40" className="w-full h-20 text-indigo-600">
+                                            <polyline
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="2"
+                                                points={sparklinePoints.map((p) => `${p.x},${p.y}`).join(' ')}
+                                            />
+                                        </svg>
+                                    ) : (
+                                        <p className="text-sm text-gray-500">Transactions will appear here once payments start flowing.</p>
+                                    )}
+                                    <p className="text-xs text-gray-500 mt-2">Shows the last {sparklinePoints.length || 0} payments received.</p>
                                 </div>
                             </div>
                         </div>

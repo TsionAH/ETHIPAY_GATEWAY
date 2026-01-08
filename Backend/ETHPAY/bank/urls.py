@@ -1,5 +1,6 @@
 # In ETHPAY backend: bank/urls.py
 from django.urls import path
+from . import views  # ADD THIS LINE
 from .views import (
     process_bank_payment, verify_bank_account,
     create_demo_accounts, get_bank_accounts,
@@ -15,4 +16,5 @@ urlpatterns = [
     path('accounts/', get_bank_accounts, name='get-bank-accounts'),
     path('merchant/dashboard/', get_merchant_dashboard, name='merchant-dashboard'),
     path('bank-payment/', bank_payment_page, name='bank-payment-page'),
+    path('transaction/<str:transaction_id>/', views.get_transaction_details, name='get_transaction_details'),
 ]

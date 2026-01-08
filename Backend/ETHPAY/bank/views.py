@@ -7,6 +7,7 @@ from .services import BankPaymentService
 from .models import BankAccount, BankTransaction
 from .serializers import BankAccountSerializer, BankTransactionSerializer
 from django.shortcuts import render
+import uuid
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -60,6 +61,225 @@ def process_bank_payment(request):
             'error': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_transaction_details(request, transaction_id):
+    """Get transaction details by ID or payment ID"""
+    try:
+        print(f"Looking up transaction: {transaction_id}")
+        
+        # Try to find by transaction_id first
+        try:
+            # Check if it's a UUID
+            transaction_uuid = uuid.UUID(transaction_id)
+            transaction = BankTransaction.objects.filter(transaction_id=transaction_uuid).first()
+        except ValueError:
+            # Not a UUID, try as string
+            transaction = BankTransaction.objects.filter(transaction_id__icontains=transaction_id).first()
+        
+        if not transaction:
+            # Try to find by payment reference
+            from api.models import Payment
+            
+            # Check if it's a payment ID (starts with PAY-)
+            if transaction_id.startswith('PAY-'):
+                payment = Payment.objects.filter(payment_id=transaction_id).first()
+                if payment:
+                    transaction = BankTransaction.objects.filter(payment=payment).first()
+            else:
+                # Try to find by transaction ID pattern (TXN)
+                if transaction_id.startswith('TXN'):
+                    transaction = BankTransaction.objects.filter(transaction_id__icontains=transaction_id).first()
+        
+        if transaction:
+            # Get related transaction for merchant if this is customer transaction
+            merchant_transaction = None
+            service_transaction = None
+            
+            if transaction.transaction_type == 'debit':
+                # This is customer debit, find merchant credit
+                merchant_transaction = BankTransaction.objects.filter(
+                    description__icontains=transaction.bank_account.account_number,
+                    transaction_type='credit'
+                ).order_by('-created_at').first()
+                
+                # Find service fee transaction
+                service_transaction = BankTransaction.objects.filter(
+                    description__icontains='service fee',
+                    created_at__gte=transaction.created_at
+                ).order_by('-created_at').first()
+            
+            response_data = {
+                'success': True,
+                'transaction': {
+                    'transaction_id': str(transaction.transaction_id),
+                    'payment_id': str(transaction.payment.payment_id) if transaction.payment else None,
+                    'account_number': transaction.bank_account.account_number,
+                    'account_holder': transaction.bank_account.account_holder_name,
+                    'amount': float(transaction.amount),
+                    'transaction_type': transaction.transaction_type,
+                    'description': transaction.description,
+                    'running_balance': float(transaction.running_balance),
+                    'status': transaction.status,
+                    'created_at': transaction.created_at.isoformat(),
+                    'bank_name': transaction.bank_account.bank_name
+                }
+            }
+            
+            # Add merchant transaction details if found
+            if merchant_transaction:
+                response_data['merchant_transaction'] = {
+                    'transaction_id': str(merchant_transaction.transaction_id),
+                    'amount': float(merchant_transaction.amount),
+                    'merchant_received': float(merchant_transaction.amount),
+                    'merchant_balance': float(merchant_transaction.running_balance),
+                    'description': merchant_transaction.description
+                }
+                
+                # Calculate service fee
+                if transaction.transaction_type == 'debit':
+                    total_amount = float(transaction.amount)
+                    merchant_received = float(merchant_transaction.amount)
+                    service_fee = total_amount - merchant_received
+                    response_data['fee_breakdown'] = {
+                        'total_amount': total_amount,
+                        'merchant_received': merchant_received,
+                        'service_fee': service_fee,
+                        'fee_percentage': f"{(service_fee/total_amount*100):.1f}%"
+                    }
+            
+            # Add service transaction if found
+            if service_transaction:
+                response_data['service_transaction'] = {
+                    'transaction_id': str(service_transaction.transaction_id),
+                    'amount': float(service_transaction.amount),
+                    'description': service_transaction.description
+                }
+            
+            return Response(response_data)
+        else:
+            return Response({
+                'success': False,
+                'error': 'Transaction not found',
+                'suggestions': [
+                    'Check if the transaction ID is correct',
+                    'Make sure the transaction exists in the database',
+                    'Try using the payment ID instead'
+                ]
+            }, status=status.HTTP_404_NOT_FOUND)
+            
+    except Exception as e:
+        print(f"Error in get_transaction_details: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return Response({
+            'success': False,
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_transaction_by_payment_id(request, payment_id):
+    """Get transaction details by payment ID"""
+    try:
+        print(f"Looking up transaction by payment ID: {payment_id}")
+        
+        from api.models import Payment
+        from .models import BankTransaction
+        
+        # Find payment
+        payment = Payment.objects.filter(payment_id=payment_id).first()
+        
+        if not payment:
+            return Response({
+                'success': False,
+                'error': f'Payment with ID {payment_id} not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        # Find bank transaction for this payment
+        transaction = BankTransaction.objects.filter(payment=payment).first()
+        
+        if not transaction:
+            return Response({
+                'success': False,
+                'error': f'No bank transaction found for payment {payment_id}'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        # Find related transactions
+        customer_transaction = BankTransaction.objects.filter(
+            bank_account__account_number__in=['910000001', '100035366'],
+            description__icontains=payment_id,
+            transaction_type='debit'
+        ).first()
+        
+        merchant_transaction = BankTransaction.objects.filter(
+            bank_account__account_number='200000001',
+            description__icontains=payment_id,
+            transaction_type='credit'
+        ).first()
+        
+        service_transaction = BankTransaction.objects.filter(
+            bank_account__account_number='900000001',
+            description__icontains=payment_id,
+            transaction_type='credit'
+        ).first()
+        
+        response_data = {
+            'success': True,
+            'payment': {
+                'payment_id': str(payment.payment_id),
+                'amount': float(payment.amount),
+                'status': payment.status,
+                'created_at': payment.created_at.isoformat()
+            }
+        }
+        
+        if customer_transaction:
+            response_data['customer_transaction'] = {
+                'transaction_id': str(customer_transaction.transaction_id),
+                'amount': float(customer_transaction.amount),
+                'running_balance': float(customer_transaction.running_balance),
+                'description': customer_transaction.description
+            }
+        
+        if merchant_transaction:
+            response_data['merchant_transaction'] = {
+                'transaction_id': str(merchant_transaction.transaction_id),
+                'amount': float(merchant_transaction.amount),
+                'merchant_received': float(merchant_transaction.amount),
+                'merchant_balance': float(merchant_transaction.running_balance),
+                'description': merchant_transaction.description
+            }
+            
+            # Calculate fee breakdown
+            if customer_transaction and merchant_transaction:
+                total_amount = float(customer_transaction.amount)
+                merchant_received = float(merchant_transaction.amount)
+                service_fee = total_amount - merchant_received
+                
+                response_data['fee_breakdown'] = {
+                    'total_amount': total_amount,
+                    'merchant_received': merchant_received,
+                    'service_fee': service_fee,
+                    'fee_percentage': f"{(service_fee/total_amount*100):.1f}%"
+                }
+        
+        if service_transaction:
+            response_data['service_transaction'] = {
+                'transaction_id': str(service_transaction.transaction_id),
+                'amount': float(service_transaction.amount),
+                'description': service_transaction.description
+            }
+        
+        return Response(response_data)
+        
+    except Exception as e:
+        print(f"Error in get_transaction_by_payment_id: {str(e)}")
+        return Response({
+            'success': False,
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def create_demo_accounts(request):
@@ -71,7 +291,7 @@ def create_demo_accounts(request):
             account_info.append({
                 'account_number': account.account_number,
                 'account_holder': account.account_holder_name,
-                'balance': float(account.current_balance),  # Float for JSON serialization
+                'balance': float(account.current_balance),
                 'user_role': account.user.role,
                 'user_email': account.user.email
             })
@@ -181,6 +401,41 @@ def get_bank_accounts(request):
     accounts = BankAccount.objects.filter(user=request.user, is_active=True)
     serializer = BankAccountSerializer(accounts, many=True)
     return Response(serializer.data, status=200)
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_recent_transactions(request):
+    """Get recent transactions for all accounts"""
+    try:
+        limit = int(request.GET.get('limit', 10))
+        
+        transactions = BankTransaction.objects.all().order_by('-created_at')[:limit]
+        
+        transaction_data = []
+        for tx in transactions:
+            transaction_data.append({
+                'transaction_id': str(tx.transaction_id),
+                'account_number': tx.bank_account.account_number,
+                'account_holder': tx.bank_account.account_holder_name,
+                'amount': float(tx.amount),
+                'type': tx.transaction_type,
+                'description': tx.description,
+                'balance': float(tx.running_balance),
+                'created_at': tx.created_at.isoformat(),
+                'status': tx.status
+            })
+        
+        return Response({
+            'success': True,
+            'transactions': transaction_data,
+            'count': len(transaction_data)
+        })
+        
+    except Exception as e:
+        return Response({
+            'success': False,
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 def bank_payment_page(request):
     """Serve the bank payment page"""

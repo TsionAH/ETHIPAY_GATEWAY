@@ -4,6 +4,7 @@ import ProductsPage from './pages/ProductsPage.jsx';
 import ProductDetail from './pages/ProductDetail.jsx';
 import CartPage from './pages/CartPage.jsx';
 import CheckoutPage from './pages/CheckoutPage.jsx';
+ // ADD THIS IMPORT
 import OrderSuccess from './pages/OrderSuccess.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
@@ -32,7 +33,6 @@ function App() {
                     <CartPage />
                 </MainLayout>
             } />
-            {/* MAKE SURE THIS ROUTE EXISTS */}
             <Route path="/checkout" element={
                 <MainLayout>
                     <CheckoutPage />
@@ -53,6 +53,8 @@ function App() {
                     <Register />
                 </MainLayout>
             } />
+            
+           
         </Routes>
     );
 }

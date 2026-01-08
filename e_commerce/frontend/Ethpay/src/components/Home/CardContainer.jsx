@@ -100,7 +100,7 @@ const CardContainer = () => {
                                 </p>
                                 <div className="mt-3 flex justify-between items-center">
                                     <span className="font-bold text-blue-600">
-                                        ${product.price}
+                                        {product.price} ETB
                                     </span>
                                     <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">
                                         {product.category}

@@ -1,14 +1,13 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { processBankPayment } from "../service/bankService";
 import { isAuthenticated } from "../service/authService";
 
 function BankPaymentPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    account_number: "",
-    password: "",
+    account_number: "910000001",
+    password: "00ldfb@B",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -36,6 +35,22 @@ function BankPaymentPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const processBankPayment = async (paymentData) => {
+    try {
+      const response = await fetch('http://localhost:8001/api/bank/process/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(paymentData)
+      });
+      
+      return await response.json();
+    } catch (error) {
+      throw error;
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -46,6 +61,7 @@ function BankPaymentPage() {
         payment_id: paymentId,
         account_number: formData.account_number,
         password: formData.password,
+        amount: amount
       });
 
       if (result.success) {
@@ -54,7 +70,7 @@ function BankPaymentPage() {
         
         // Redirect to success page after 3 seconds
         setTimeout(() => {
-          navigate(`/payment-success?transaction_id=${result.transaction_id}&amount=${amount}`);
+          navigate(`/payment-success?transaction_id=${result.transaction_id}&amount=${amount}&merchant_received=${result.merchant_received}&service_fee=${result.service_fee}`);
         }, 3000);
       } else {
         setError(result.error || "Payment failed");
@@ -96,7 +112,7 @@ function BankPaymentPage() {
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Merchant:</span>
-                  <span className="font-semibold">{merchant || "E-commerce Store"}</span>
+                  <span className="font-semibold">{merchant || "ETHO SHOP"}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Order ID:</span>
@@ -106,7 +122,34 @@ function BankPaymentPage() {
                   <span className="text-gray-600">Amount:</span>
                   <span className="font-bold text-blue-600">{amount} ETB</span>
                 </div>
+                <div className="flex justify-between text-sm text-green-600">
+                  <span>Merchant Receives (98%):</span>
+                  <span>{(parseFloat(amount || 0) * 0.98).toFixed(2)} ETB</span>
+                </div>
+                <div className="flex justify-between text-sm text-gray-500">
+                  <span>Service Fee (2%):</span>
+                  <span>{(parseFloat(amount || 0) * 0.02).toFixed(2)} ETB</span>
+                </div>
               </div>
+            </div>
+
+            {/* Demo Account Info */}
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+              <h3 className="font-semibold text-green-800 mb-2">Demo Account</h3>
+              <p className="text-sm text-green-700 mb-2">
+                Use these demo credentials for testing:
+              </p>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <span className="font-medium">Account:</span> 910000001
+                </div>
+                <div>
+                  <span className="font-medium">Password:</span> 00ldfb@B
+                </div>
+              </div>
+              <p className="text-xs text-green-600 mt-2">
+                Balance: 10,000,000.00 ETB
+              </p>
             </div>
 
             {/* Bank Payment Form */}
@@ -122,7 +165,7 @@ function BankPaymentPage() {
                   onChange={handleChange}
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="e.g., 100035363"
+                  placeholder="e.g., 910000001"
                 />
               </div>
 
@@ -137,7 +180,7 @@ function BankPaymentPage() {
                   onChange={handleChange}
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter your bank password"
+                  placeholder="e.g., 00ldfb@B"
                 />
               </div>
 
@@ -158,7 +201,7 @@ function BankPaymentPage() {
             <div className="mt-6 pt-6 border-t border-gray-200">
               <h4 className="font-semibold text-gray-800 mb-2">Secure Sandbox</h4>
               <p className="text-sm text-gray-600">
-                This is a sandbox flow. Use your assigned sandbox credentials to complete the payment.
+                This is a sandbox flow. Use demo credentials to complete the payment.
               </p>
             </div>
           </>

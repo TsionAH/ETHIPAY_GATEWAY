@@ -1,14 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+const DEMO_ACCOUNTS = {
+  CUSTOMER: {
+    account_number: '910000001',
+    password: '00ldfb@B'
+  },
+  MERCHANT: {
+    account_number: '200000001',
+    password: 'merchant123'
+  }
+};
+
 const CheckoutPage = () => {
     const [cartItems, setCartItems] = useState([]);
     const [total, setTotal] = useState(0);
     const [loading, setLoading] = useState(false);
     const [showBankForm, setShowBankForm] = useState(false);
     const [bankForm, setBankForm] = useState({
-        account_number: '',
-        password: ''
+        account_number: DEMO_ACCOUNTS.CUSTOMER.account_number,
+        password: DEMO_ACCOUNTS.CUSTOMER.password
     });
     const [paymentData, setPaymentData] = useState(null);
     const [orderDetails, setOrderDetails] = useState({
@@ -45,7 +56,6 @@ const CheckoutPage = () => {
     };
 
     const initiatePayment = async () => {
-        // Check if user is logged in
         const token = localStorage.getItem('token');
         if (!token) {
             alert('Please login to proceed with checkout');
@@ -53,7 +63,6 @@ const CheckoutPage = () => {
             return null;
         }
 
-        // Prepare order data
         const orderData = {
             items: cartItems.map(item => ({
                 id: item.id,
@@ -69,8 +78,6 @@ const CheckoutPage = () => {
         };
 
         try {
-            // FIRST: Try to create order in e-commerce backend
-            console.log('Creating order in e-commerce backend...');
             const orderResponse = await fetch('http://localhost:8000/api/shop/orders/create/', {
                 method: 'POST',
                 headers: {
@@ -87,13 +94,11 @@ const CheckoutPage = () => {
             const orderDataResult = await orderResponse.json();
             console.log('E-commerce order creation response:', orderDataResult);
 
-            if (orderDataResult.success || orderDataResult.order_id) {
+            if (orderResponse.ok && (orderDataResult.success || orderDataResult.order_id)) {
                 const orderId = orderDataResult.order_id || orderDataResult.id;
+                const paymentIdFromApi = orderDataResult.payment_id || orderDataResult.paymentID || orderDataResult.paymentId;
+                const paymentId = paymentIdFromApi || `PAY-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
                 
-                // Generate a payment ID for EthPay
-                const paymentId = `PAY-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
-                
-                // Save order ID for later reference
                 localStorage.setItem('current_order', JSON.stringify({
                     order_id: orderId,
                     payment_id: paymentId,
@@ -126,7 +131,22 @@ const CheckoutPage = () => {
             console.log('Account:', accountNumber);
             console.log('Amount:', total);
             
-            // Call REAL EthPay API for payment processing with fee distribution
+            // Show demo account hint if empty
+            if (!accountNumber) {
+                return {
+                    success: false,
+                    error: 'Please enter account number. Use demo: 910000001'
+                };
+            }
+            
+            // Show hint if using old account
+            if (accountNumber === '100035366') {
+                return {
+                    success: false,
+                    error: 'Account number changed. Please use 910000001 instead.'
+                };
+            }
+            
             const response = await fetch('http://localhost:8001/api/bank/process/', {
                 method: 'POST',
                 headers: {
@@ -211,7 +231,6 @@ const CheckoutPage = () => {
         setError('');
 
         try {
-            // Use REAL EthPay payment (not mock)
             const result = await processRealBankPayment(
                 paymentData?.payment_id,
                 bankForm.account_number,
@@ -219,7 +238,21 @@ const CheckoutPage = () => {
             );
 
             if (result.success) {
-                // Save REAL payment confirmation with details
+                // Update shop backend order status
+                try {
+                    await fetch('http://localhost:8000/api/shop/payment/callback/', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            payment_id: paymentData?.payment_id,
+                            status: 'success',
+                            transaction_id: result.transaction_id
+                        })
+                    });
+                } catch (callbackError) {
+                    console.warn('Callback update failed:', callbackError);
+                }
+
                 localStorage.setItem('last_payment', JSON.stringify({
                     order_id: paymentData?.order_id,
                     transaction_id: result.transaction_id,
@@ -236,10 +269,8 @@ const CheckoutPage = () => {
                     }
                 }));
                 
-                // Clear cart
                 localStorage.removeItem('cart');
                 
-                // Navigate to success page with REAL data
                 navigate(`/order-success?order_id=${paymentData?.order_id}&transaction_id=${result.transaction_id}&amount=${total}&merchant_received=${result.details?.merchant_received}&service_fee=${result.details?.service_fee}&payment_id=${paymentData?.payment_id}`);
             } else {
                 setError(result.error || 'Payment failed. Please try again.');
@@ -251,13 +282,19 @@ const CheckoutPage = () => {
         } finally {
             setLoading(false);
             setShowBankForm(false);
-            setBankForm({ account_number: '', password: '' });
+            setBankForm({ 
+                account_number: DEMO_ACCOUNTS.CUSTOMER.account_number,
+                password: DEMO_ACCOUNTS.CUSTOMER.password 
+            });
         }
     };
 
     const handleCancelBankPayment = () => {
         setShowBankForm(false);
-        setBankForm({ account_number: '', password: '' });
+        setBankForm({ 
+            account_number: DEMO_ACCOUNTS.CUSTOMER.account_number,
+            password: DEMO_ACCOUNTS.CUSTOMER.password 
+        });
         setPaymentData(null);
         setError('');
     };
@@ -274,7 +311,7 @@ const CheckoutPage = () => {
             
             const data = await response.json();
             if (data.success) {
-                alert(`Demo accounts created successfully!\n\nAccounts:\n${data.accounts.map(acc => `• ${acc.account_holder}: ${acc.account_number} (Balance: ETB ${acc.balance})`).join('\n')}`);
+                alert(`Demo accounts created/verified!\n\nUse these credentials for testing:\n\nCUSTOMER:\n• Account: 910000001\n• Password: 00ldfb@B\n• Balance: 10,000,000 ETB\n\nMERCHANT (ETHO SHOP):\n• Account: 200000001\n• Password: merchant123\n\nClick "Check Merchant Balance" after payment to see updates.`);
             } else {
                 alert(`Failed to create demo accounts: ${data.error}`);
             }
@@ -355,6 +392,17 @@ const CheckoutPage = () => {
                             <p><strong>Order ID:</strong> {paymentData?.order_id?.substring(0, 10)}...</p>
                             <p><strong>Amount:</strong> ETB {total}</p>
                             <p><strong>Payment ID:</strong> {paymentData?.payment_id?.substring(0, 12)}...</p>
+                            
+                            {/* DEMO ACCOUNT INFO */}
+                            <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded">
+                                <h4 className="font-semibold text-green-800 mb-1">Demo Account:</h4>
+                                <p className="text-sm"><strong>Account:</strong> 910000001</p>
+                                <p className="text-sm"><strong>Password:</strong> 00ldfb@B</p>
+                                <p className="text-sm text-green-600 mt-1">
+                                    Use this demo account for testing
+                                </p>
+                            </div>
+                            
                             <p className="text-sm text-blue-600 mt-2">
                                 Note: 2% service fee will be deducted. Merchant receives 98%.
                             </p>
@@ -371,10 +419,13 @@ const CheckoutPage = () => {
                                     value={bankForm.account_number}
                                     onChange={handleBankFormChange}
                                     className="w-full border p-2 rounded"
-                                    placeholder="Use: 100035366 for customer"
+                                    placeholder="Enter 910000001 for demo"
                                     required
                                     disabled={loading}
                                 />
+                                <p className="text-xs text-gray-500 mt-1">
+                                    Demo account: 910000001
+                                </p>
                             </div>
                             
                             <div className="mb-6">
@@ -387,20 +438,12 @@ const CheckoutPage = () => {
                                     value={bankForm.password}
                                     onChange={handleBankFormChange}
                                     className="w-full border p-2 rounded"
-                                    placeholder="Use: customer123 for customer"
+                                    placeholder="Enter 00ldfb@B for demo"
                                     required
                                     disabled={loading}
                                 />
-                            </div>
-                            
-                            <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded">
-                                <p className="text-sm text-yellow-800 font-semibold mb-2">Demo Accounts (for testing):</p>
-                                <ul className="text-sm space-y-1">
-                                    <li>• <span className="font-semibold">Customer:</span> <span className="font-mono">100035366</span> | Password: <span className="font-mono">customer123</span></li>
-                                    <li>• <span className="font-semibold">Merchant:</span> <span className="font-mono">200000001</span> | Password: <span className="font-mono">merchant123</span></li>
-                                </ul>
-                                <p className="text-xs text-yellow-600 mt-2">
-                                    Customer has 10,000 ETB, Merchant starts with 0 ETB
+                                <p className="text-xs text-gray-500 mt-1">
+                                    Demo password: 00ldfb@B
                                 </p>
                             </div>
                             

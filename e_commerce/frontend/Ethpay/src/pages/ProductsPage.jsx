@@ -128,7 +128,7 @@ const ProductsPage = () => {
                                     <div className="p-4">
                                         <h3 className="font-bold text-lg mb-2">{product.name}</h3>
                                         <p className="text-gray-600 text-sm mb-2">{product.category}</p>
-                                        <p className="font-bold text-blue-600">${product.price}</p>
+                                        <p className="font-bold text-blue-600">{product.price} ETB</p>
                                     </div>
                                 </div>
                                 
