@@ -24,10 +24,12 @@ SECRET_KEY = 'django-insecure-8nctsmn16_l5-&%i59tp*+p9=+m_jhbu@pdy$mgnj$qggpgwlc
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+DEBUG = os.getenv('DEBUG', '0') == '1'
 
 # CORS Settings - Allow frontend to access API
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', '').split(',')
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",

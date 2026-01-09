@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: ecommerce-frontend
+    env: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./build
+    envVars:
+      - key: REACT_APP_API_URL
+        value: https://ecommerce-backend.onrender.com
+      - key: REACT_APP_ETHPAY_URL
+        value: https://ethpay-backend.onrender.com
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

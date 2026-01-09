@@ -1,0 +1,7 @@
+# requirements.txt
+Django>=4.2
+django-cors-headers
+djangorestframework
+gunicorn
+whitenoise
+requests

@@ -1,0 +1,80 @@
+version: '3.8'
+
+services:
+  # E-commerce Django Backend (Port 8000)
+  ecommerce-backend:
+    build:
+      context: ./e_commerce/backend/ethpay
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=1
+      - DJANGO_SECRET_KEY=insecure-secret-key-for-development-123
+      - ALLOWED_HOSTS=localhost,127.0.0.1
+      - CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
+      - DATABASE_URL=sqlite:///db.sqlite3
+      - ETHPAY_API_URL=http://ethpay-backend:8001
+    volumes:
+      - ./e_commerce/backend/ethpay:/app
+      # Remove SQLite volume mount - SQLite will be in the code directory
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             python manage.py runserver 0.0.0.0:8000"
+
+  # EthPay Django Backend (Port 8001)
+  ethpay-backend:
+    build:
+      context: ./backend/ethpay
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    environment:
+      - DEBUG=1
+      - DJANGO_SECRET_KEY=insecure-secret-key-for-ethpay-456
+      - ALLOWED_HOSTS=localhost,127.0.0.1
+      - CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000,http://localhost:8000
+      - DATABASE_URL=sqlite:///db.sqlite3
+    volumes:
+      - ./backend/ethpay:/app
+      # Remove SQLite volume mount
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             python manage.py runserver 0.0.0.0:8001"
+
+  # Main React Frontend (Port 5173)
+  main-frontend:
+    build:
+      context: ./frontend/ethpay
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_ECOMMERCE_API_URL=http://localhost:8000
+      - VITE_ETHPAY_API_URL=http://localhost:8001
+    volumes:
+      - ./frontend/ethpay:/app
+      - /app/node_modules
+    depends_on:
+      - ecommerce-backend
+      - ethpay-backend
+    command: npm run dev -- --host 0.0.0.0
+
+  # E-commerce React Frontend (Port 3000)
+  ecommerce-frontend:
+    build:
+      context: ./e_commerce/frontend/ethpay
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+      - REACT_APP_ETHPAY_URL=http://localhost:8001
+    volumes:
+      - ./e_commerce/frontend/ethpay:/app
+      - /app/node_modules
+    depends_on:
+      - ecommerce-backend
+    command: npm start
+
+# Remove SQLite volumes - they're causing the issue
