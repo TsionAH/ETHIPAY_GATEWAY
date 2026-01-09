@@ -1,6 +1,15 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../Landing.css';
+
 function Landing() {
+  const navigate = useNavigate();
+
+  const handleButtonClick = (e) => {
+    e.preventDefault();
+    navigate('/login');
+  };
+
   return (
     <>
       <header className="siteHeader">
@@ -17,7 +26,7 @@ function Landing() {
               <li><a href="#forUsers">For Users</a></li>
               <li><a href="#contact">Contact</a></li>
             </ul>
-            <a href="#signup" className="ctaButton">Get Started</a>
+            <a href="#signup" className="ctaButton" onClick={handleButtonClick}>Get Started</a>
           </nav>
         </div>
       </header>
@@ -33,10 +42,10 @@ function Landing() {
           <h1>Ethiopia's Digital Payment Gateway</h1>
           <p>
             Secure, fast, and reliable payment processing for individuals and businesses across Ethiopia.
-            Experience smooth transactions with EthPay.
+            Experience smooth transactions with EthiPay.
           </p>
           <div className="heroButtons">
-            <a href="#signup" className="btnPrimary">Start Processing Payments</a>
+            <a href="#signup" className="btnPrimary" onClick={handleButtonClick}>Start Processing Payments</a>
             <a href="#featuresSection" className="btnSecondary">Learn More</a>
           </div>
         </div>
@@ -44,7 +53,7 @@ function Landing() {
       <section className="featuresSection" id="featuresSection">
         <div className="container">
           <div className="sectionTitle">
-            <h2>Why Choose EthPay?</h2>
+            <h2>Why Choose EthiPay?</h2>
            <strong> <p>Our platform is designed with simplicity, security, and speed in mind. Here's what makes us different.</p></strong>
           </div>
           <div className="featuresGrid">
@@ -97,7 +106,7 @@ function Landing() {
           <div className="sectionTitle">
             <h2>Built for Everyone</h2>
             <strong>
-            <p>EthPay is designed to meet the needs of all users across Ethiopia.</p></strong>
+            <p>EthiPay is designed to meet the needs of all users across Ethiopia.</p></strong>
           </div>
           <div className="userCards">
             <article className="userCard">
@@ -154,14 +163,14 @@ function Landing() {
           <p>
             Join thousands of users who trust EthiPay for their daily transactions. Sign up today and experience the future of payments in Ethiopia.
           </p>
-          <a href="#signup" className="btnPrimary">Get Started For Free</a>
+          <a href="#signup" className="btnPrimary" onClick={handleButtonClick}>Secure Your Transactions Now</a>
         </div>
       </section>
       <footer className="siteFooter" id="contact">
         <div className="container">
           <div className="footerContent">
             <div className="footerColumn">
-              <h4>EthPay</h4>
+              <h4>EthiPay</h4>
               <p>
     Revolutionizing payments in Ethiopia with secure, fast transaction solutions built for today's digital economy.
               </p>
@@ -202,7 +211,7 @@ function Landing() {
             </div>
           </div>
           <div className="copyright">
-            <p>&copy; 2026 EthPay. All rights reserved. | Ethiopian E-payment Gateway</p>
+            <p>&copy; 2026 EthiPay. All rights reserved. | Ethiopian E-payment Gateway</p>
           </div>
         </div>
       </footer>
