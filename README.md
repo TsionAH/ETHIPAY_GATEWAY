@@ -450,9 +450,9 @@ Content-Type: application/json
 ### **Core Team**
 
 - **Project Lead**: Tsion A.
-- **Backend Developer**: [Your Name]
-- **Frontend Developer**: [Your Name]
-- **UI/UX Designer**: [Your Name]
+- **Backend Developer**: Tsion A and Bonut K
+- **Frontend Developer**: Basilael S and Semhal H
+- **UI/UX Designer**: Naol W
 
 ### **Contributing**
 
@@ -464,7 +464,7 @@ Content-Type: application/json
 
 ## **📄 License**
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/TsionAH/ETHIPAY_GATEWAY/README.md) file for details.
 
 ## **🙏 Acknowledgments**
 
