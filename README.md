@@ -29,7 +29,7 @@ SRS_implementation/
 └── docker-compose.yml            # Multi-service orchestration
 ```
 
-## **✨ Key Features ot oe **
+## **✨ Key Features **
 
 ### **🔐 Payment Gateway (EthPay)**
 
