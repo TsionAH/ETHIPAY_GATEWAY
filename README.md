@@ -3,10 +3,8 @@
 A full-stack digital payment gateway and e-commerce platform for Ethiopia, built with Django REST API and React. This system implements secure payment processing, online shopping, and seamless integration between payment services and e-commerce.
 
 ## **🌐 Live Demo**
-
-- **Main Payment Gateway**: `https://ethpay.onrender.com` (Port 8001)
-- **E-commerce Platform**: `https://shopit.onrender.com` (Port 8000)
-- **Frontend Dashboard**: `https://ethpay-dashboard.onrender.com` (Port 5173)
+- **E-commerce Platform backend**: `(https://backend-capstone1-9.onrender.com)` (Port 8000)
+- **Frontend first draft**: `https://ethio-shop-fulstack-3.onrender.com/` (Port 5173)
 
 ## **🚀 Project Overview**
 
