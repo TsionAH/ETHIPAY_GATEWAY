@@ -12,7 +12,7 @@ A full-stack digital payment gateway and e-commerce platform for Ethiopia, built
 ETHPAY is a comprehensive payment ecosystem consisting of:
 
 1. **EthPay Payment Gateway** - Secure Ethiopian payment processing
-2. **ShopIt E-commerce** - Online marketplace with integrated payments
+2. **ETHIO_SHOP E-commerce** - Online marketplace with integrated payments
 3. **Unified Frontend** - Modern dashboard for both services
 
 ## **📁 Project Structure**
@@ -61,7 +61,7 @@ SRS_implementation/
 ### **Backend (Django)**
 
 - **Framework**: Django 4.2 + Django REST Framework
-- **Database**: SQLite (Development) / PostgreSQL (Production)
+- **Database**: SQLite (Development) / PostgreSQL (Production) WE did not use it because of time but we will in the future
 - **Authentication**: JWT with Simple JWT
 - **CORS**: django-cors-headers
 - **Server**: Gunicorn
@@ -73,7 +73,7 @@ SRS_implementation/
 - **Routing**: React Router DOM v6
 - **Styling**: Tailwind CSS
 - **HTTP Client**: Axios
-- **Animations**: Framer Motion (optional)
+- **Animations**: Framer Motion (optional) #we did not include on the code for future 
 - **Icons**: Font Awesome
 
 ### **DevOps**
