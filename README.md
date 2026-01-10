@@ -475,10 +475,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## **📞 Contact & Support**
 
-- **Email**: ethpay.info@gmail.com
-- **Phone**: +251 934 208 050
+- **Email**: tsionalemualx@gmail.com
+- **Phone**: +251 952091591
 - **Address**: Addis Ababa, Ethiopia
-- **GitHub Issues**: [Report Bugs](https://github.com/yourusername/ethpay/issues)
+- **GitHub Issues**: [Report Bugs](https://github.com/TsionAH/ETHIPAY_GATEWAY/issues)
 
 ---
 
