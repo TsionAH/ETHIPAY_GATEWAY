@@ -3,8 +3,8 @@
 A full-stack digital payment gateway and e-commerce platform for Ethiopia, built with Django REST API and React. This system implements secure payment processing, online shopping, and seamless integration between payment services and e-commerce.
 
 ## **🌐 Live Demo**
-- **E-commerce Platform backend**: `(https://backend-capstone1-9.onrender.com)` (Port 8000)
-- **Frontend first draft**: `https://ethio-shop-fulstack-3.onrender.com/` (Port 5173)
+- [**E-commerce Platform backend**] (https://backend-capstone1-9.onrender.com) **Port 8000**
+- [**Frontend first draft**] (https://ethio-shop-fulstack-3.onrender.com/) **Port 5173**
 
 ## **🚀 Project Overview**
 
@@ -464,7 +464,7 @@ Content-Type: application/json
 
 ## **📄 License**
 
-This project is licensed under the MIT License - see the [LICENSE](https://github.com/TsionAH/ETHIPAY_GATEWAY/README.md) file for details.
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/TsionAH/ETHIPAY_GATEWAY/blob/main/e_commerce/frontend/Ethpay/src/components/ui/Footer.jsx) file for details.
 
 ## **🙏 Acknowledgments**
 
