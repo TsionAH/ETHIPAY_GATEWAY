@@ -2,7 +2,7 @@
 
 ## Quick Start
 
-### 1. Backend Setup
+### 1. Backend Setup steps
 
 1. **Navigate to backend directory:**
    ```bash
@@ -56,7 +56,8 @@
 
 3. **Start the development server:**
    ```bash
-   npm run dev
+  npm run dev
+  
    ```
    
    The frontend will run on: **http://localhost:5173** (or the port shown)
