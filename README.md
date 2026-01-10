@@ -5,6 +5,7 @@ A full-stack digital payment gateway and e-commerce platform for Ethiopia, built
 ## **🌐 Live Demo**
 - [**E-commerce Platform backend**] (https://backend-capstone1-9.onrender.com) **Port 8000**
 - [**Frontend first draft**] (https://ethio-shop-fulstack-3.onrender.com/) **Port 5173**
+- [**Video how it works**] (https://www.loom.com/share/b60c57ed856441c18db7840e22c8fdb6) 
 - [**ETHPAY full final draft**] (**COMING SOON...**)
 
 ## **🚀 Project Overview**
