@@ -35,12 +35,12 @@
 
 6. **Start the server:**
    ```bash
-   python manage.py runserver
+   python manage.py runserver 8001
    ```
    
    Or on Windows, double-click `start_server.bat`
 
-   The backend will run on: **http://127.0.0.1:8000**
+   The backend will run on: **http://127.0.0.1:8001**
 
 ### 2. Frontend Setup
 
@@ -68,7 +68,7 @@
 - **Login:** http://localhost:5173/login
 - **Register:** http://localhost:5173/register
 - **Dashboard:** http://localhost:5173/dashboard (requires login)
-- **Admin Panel:** http://127.0.0.1:8000/admin
+- **Admin Panel:** http://127.0.0.1:8001/admin
 
 ## Troubleshooting Network Errors
 
@@ -77,11 +77,11 @@
 **Solutions:**
 
 1. **Make sure the backend is running:**
-   - Check that you see "Starting development server at http://127.0.0.1:8000" in your terminal
+   - Check that you see "Starting development server at http://127.0.0.1:8001" in your terminal
    - Try accessing http://127.0.0.1:8000 in your browser - you should see `{"message": "ETHPAY API is running"}`
 
 2. **Check if the ports are correct:**
-   - Backend: http://127.0.0.1:8000
+   - Backend: http://127.0.0.1:8001
    - Frontend: http://localhost:5173 (default Vite port)
 
 3. **CORS Issues:**
