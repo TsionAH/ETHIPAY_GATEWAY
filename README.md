@@ -89,7 +89,7 @@ SRS_implementation/
 
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone [repository-url](https://github.com/TsionAH/ETHIPAY_GATEWAY/)
 cd SRS_implementation
 
 # Build and start all services
